@@ -10,6 +10,7 @@ import re
 import socket
 import ssl
 import struct
+import time
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
@@ -214,6 +215,120 @@ def https_cert_info(ip: str, port: int = 443,
         }
     except Exception:
         return None
+
+
+# ---------------------------------------------------------------- 组播发现
+# ONVIF WS-Discovery / SSDP 设备主动发现 (酒店模式核心):
+# 摄像头无论是否改端口, 只要支持组播协议就会应答, 是发现隐藏
+# IPC / NVR 的最可靠手段之一。
+MCAST_ADDR = "239.255.255.250"
+ONVIF_PORT = 3702
+SSDP_PORT = 1900
+
+
+def onvif_discover(timeout: float = 3.0, retries: int = 2) -> list[dict]:
+    """ONVIF WS-Discovery 组播探测, 返回应答摄像头列表。
+
+    返回 [{ip, xaddrs, types, raw}], xaddrs 通常是
+    http://<ip>:<port>/onvif/device_service 形式的服务地址。
+    """
+    import uuid
+    probe = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<SOAP-ENV:Envelope '
+        'xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope" '
+        'xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" '
+        'xmlns:d="http://schemas.xmlsoap.org/ws/2005/04/discovery" '
+        'xmlns:dn="http://www.onvif.org/ver10/network/wsdl">'
+        "<SOAP-ENV:Header>"
+        "<a:Action mustUnderstand=\"1\">"
+        "http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</a:Action>"
+        f"<a:MessageID>urn:uuid:{uuid.uuid4()}</a:MessageID>"
+        "<a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/"
+        "addressing/role/anonymous</a:Address></a:ReplyTo>"
+        "<a:To mustUnderstand=\"1\">urn:schemas-xmlsoap-org:ws:2005:04:"
+        "discovery</a:To>"
+        "</SOAP-ENV:Header><SOAP-ENV:Body><d:Probe>"
+        "<d:Types>dn:NetworkVideoTransmitter</d:Types>"
+        "</d:Probe></SOAP-ENV:Body></SOAP-ENV:Envelope>"
+    ).encode("utf-8")
+
+    found: dict[str, dict] = {}
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+            s.settimeout(timeout)
+            s.sendto(probe, (MCAST_ADDR, ONVIF_PORT))
+            for _ in range(retries):
+                s.sendto(probe, (MCAST_ADDR, ONVIF_PORT))
+                deadline = time.time() + timeout
+                while time.time() < deadline:
+                    try:
+                        data, addr = s.recvfrom(8192)
+                    except socket.timeout:
+                        break
+                    ip = addr[0]
+                    if ip in found:
+                        continue
+                    text = data.decode("utf-8", errors="replace")
+                    found[ip] = {
+                        "ip": ip,
+                        "xaddrs": _xml_findall(text, r"XAddrs>([^<]+)"),
+                        "types": _xml_findall(text, r"<[^>:]*Types>([^<]+)"),
+                        "scopes": _xml_findall(text,
+                                               r"<[^>:]*Scopes>([^<]+)"),
+                        "raw": text[:400],
+                    }
+    except OSError:
+        pass
+    return list(found.values())
+
+
+def ssdp_search(timeout: float = 2.0) -> list[dict]:
+    """SSDP M-SEARCH (ST: ssdp:all), 返回应答设备 [{ip, st, server, location}]。"""
+    msg = ("M-SEARCH * HTTP/1.1\r\n"
+           f"HOST: {MCAST_ADDR}:{SSDP_PORT}\r\n"
+           'MAN: "ssdp:discover"\r\n'
+           f"MX: {max(1, int(timeout))}\r\n"
+           "ST: ssdp:all\r\n\r\n").encode("ascii")
+    results: dict[tuple, dict] = {}
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+            s.settimeout(timeout)
+            s.sendto(msg, (MCAST_ADDR, SSDP_PORT))
+            deadline = time.time() + timeout + 1
+            while time.time() < deadline:
+                try:
+                    data, addr = s.recvfrom(8192)
+                except socket.timeout:
+                    break
+                text = data.decode("utf-8", errors="replace")
+                key = (addr[0],
+                       _header(text, "ST") or _header(text, "NT") or "")
+                if key in results or not key[1]:
+                    continue
+                results[key] = {
+                    "ip": addr[0],
+                    "st": key[1],
+                    "server": _header(text, "SERVER"),
+                    "location": _header(text, "LOCATION"),
+                }
+    except OSError:
+        pass
+    return list(results.values())
+
+
+def _header(text: str, name: str) -> str | None:
+    m = re.search(rf"(?im)^{name}\s*:\s*(.+?)\r?$", text)
+    return m.group(1).strip() if m else None
+
+
+def _xml_findall(text: str, pattern: str) -> str | None:
+    m = re.search(pattern, text, re.S)
+    return m.group(1).strip() if m else None
 
 
 # ---------------------------------------------------------------- 汇总

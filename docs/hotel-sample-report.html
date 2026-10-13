@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>酒店隐私扫描报告 · 针孔摄像头排查 · 2026-10-13 14:37:23</title>
+<style>
+:root{--ink:#111827;--sub:#6b7280;--line:#e5e7eb;--bg:#f4f6fa;--card:#fff;
+--brand:#2563eb;--crit:#dc2626;--high:#ea580c;--med:#ca8a04;--low:#2563eb;--info:#6b7280}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+background:var(--bg);color:var(--ink);line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:34px 0 30px}
+header.hero h1{font-size:26px;letter-spacing:.5px}
+header.hero .sub{opacity:.85;margin-top:10px;font-size:13px;flex-wrap:wrap}
+header.hero .sub span{margin-right:18px;white-space:nowrap}
+main{padding:26px 0 60px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:-46px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+padding:18px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+.card h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:6px}
+.kpi{display:flex;align-items:baseline;gap:8px}
+.kpi b{font-size:30px}
+.kpi small{color:var(--sub)}
+.gauge-box{grid-row:span 1}
+.gauge{width:100%;height:auto;max-width:260px;display:block;margin:0 auto}
+.grid2{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin-top:16px}
+.donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.donut{width:170px;height:170px}
+.legend div{font-size:13px;margin:3px 0;color:var(--ink)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;
+margin-right:7px;vertical-align:middle}
+table.rank{width:100%;border-collapse:collapse;font-size:13px}
+table.rank th{color:var(--sub);font-weight:600;text-align:left;padding:8px 6px;
+border-bottom:1px solid var(--line)}
+table.rank td{padding:8px 6px;border-bottom:1px solid #f1f3f7}
+.bar{height:8px;border-radius:4px;background:#eef1f6;overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;border-radius:4px}
+.badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;
+font-weight:600;line-height:1.7}
+.meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--sub);
+margin:10px 0 12px}
+.meta b{color:var(--ink);font-weight:600}
+.ports{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.port{font-size:12px;background:#f1f5f9;border:1px solid var(--line);
+border-radius:8px;padding:2px 9px;color:#334155}
+.port.warn{background:#fff7ed;border-color:#fdba74;color:#9a3412}
+.port.danger{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+.finding{border:1px solid var(--line);border-left-width:4px;border-radius:10px;
+padding:12px 14px;margin:10px 0;background:#fff}
+.finding h4{font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.finding h4 .rid{font-size:11px;color:var(--sub);font-weight:500}
+.finding p{font-size:13px;color:#374151;margin:7px 0}
+.finding .fix{color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;
+border-radius:8px;padding:8px 11px;font-size:13px;margin-top:6px}
+.finding .fix b{color:#14532d}
+.finding .refs{font-size:11px;color:var(--sub);margin-top:6px}
+.finding.critical{border-left-color:var(--crit)}.finding.high{border-left-color:var(--high)}
+.finding.medium{border-left-color:var(--med)}.finding.low{border-left-color:var(--low)}
+.finding.info{border-left-color:var(--info)}
+.dev-card{margin-top:18px}
+.dev-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dev-head h2{font-size:18px}
+.dev-head .grade{width:34px;height:34px;border-radius:9px;color:#fff;
+display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+.type-chip{background:#eef2ff;color:#3730a3;border-radius:999px;
+padding:2px 12px;font-size:12px;font-weight:600}
+.vendor{font-size:13px;color:var(--sub)}
+.fix-list{counter-reset:fx}
+.fix-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line);
+font-size:13.5px}
+.fix-item:last-child{border-bottom:none}
+.fix-item .no{counter-increment:fx;min-width:26px;height:26px;border-radius:8px;
+color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;
+font-size:13px}
+.fix-item .t b{font-size:13.5px}
+.fix-item .t div{color:var(--sub);font-size:12.5px}
+.fix-item .devs{color:var(--sub);font-size:12px;white-space:nowrap}
+footer{padding:22px 0 30px;color:var(--sub);font-size:12px;text-align:center}
+@media(max-width:860px){.cards{grid-template-columns:repeat(2,1fr)}
+.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hero" style="background:linear-gradient(135deg,#4c1d95,#7c3aed)">
+<div class="wrap">
+  <h1>酒店隐私扫描报告 · 针孔摄像头排查</h1>
+  <div class="sub">
+    <span>扫描目标：127.0.0.1</span>
+    <span>时间：2026-10-13 14:37:23</span>
+    <span>耗时：13.9 秒</span>
+    <span>模式：hotel</span>
+  </div>
+</div></header>
+<main class="wrap">
+  <div class="cards">
+    <div class="card"><h3>排查结论</h3>
+      <div style="font-size:20px;font-weight:700;color:#16a34a;
+        line-height:1.4;margin-top:6px">未发现摄像头类设备</div>
+      <div style="margin-top:10px;font-size:12.5px;color:var(--sub)">
+        高度可疑 0 台 · 可疑
+        0 台</div>
+    </div>
+    <div class="card"><h3>网络设备</h3>
+      <div class="kpi"><b>1</b><small>台在线设备</small></div>
+      <div class="kpi" style="margin-top:8px"><b>4</b>
+        <small>个开放端口</small></div>
+    </div>
+    <div class="card"><h3>组播协议发现</h3>
+      <div class="kpi"><b>0</b><small>台 ONVIF 摄像头应答</small></div>
+      <div class="kpi" style="margin-top:8px"><b>0</b>
+        <small>条 SSDP 应答</small></div>
+    </div>
+    <div class="card"><h3>排查提示</h3>
+      <div style="font-size:12.5px;color:var(--sub);margin-top:8px;line-height:1.7">
+        本报告只覆盖<b>接入网络</b>的摄像头；<b>存本地卡、不入网</b>的针孔摄像头
+        网络扫描无法发现，请务必配合下方物理排查清单。</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>全部设备摄像头可疑度</h3>
+    <table class="rank">
+      <tr><th>IP</th><th>设备类型</th><th>厂商</th><th>可疑度</th><th>关键证据</th></tr>
+      <tr><td><b>127.0.0.1</b></td>
+<td>路由器/网关</td>
+<td>未知厂商</td>
+<td><span class="badge" style="color:#16a34a;background:#f0fdf4">
+常规 8</span></td>
+<td>端口画像与常见手机/电视/音箱均不匹配</td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>可疑设备证据</h3>
+    <div class="finding info"><h4>未发现摄像头类设备 — 网络侧未检测到IPC/NVR/针孔摄像头特征</h4></div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>物理排查清单</h3>
+    <div class="fix-list"><div class="fix-item"><div class="no" style="background:#7c3aed">1</div><div class="t"><b>网络扫描</b><div>入住后连上酒店 WiFi, 立即运行本工具扫描; 换房间/换楼层的 AP 后重扫一次; 偷拍摄像头多为独立小设备, 只要入网就能发现。</div></div></div><div class="fix-item"><div class="no" style="background:#7c3aed">2</div><div class="t"><b>红光测试</b><div>关灯、拉窗帘, 用手机手电筒照射可疑位置(烟雾报警器、插座、电视机顶盒、空调出风口、装饰品、正对床/浴室的摆件), 肉眼或手机摄像头观察是否有微弱红/蓝光点——红外补光灯的痕迹。</div></div></div><div class="fix-item"><div class="no" style="background:#7c3aed">3</div><div class="t"><b>镜头反光</b><div>打开手机相机仔细扫视房间, 缓慢移动寻找微小反光点; 针孔镜头在强光下会有特征性反光, 肉眼难辨但镜头可辨。</div></div></div><div class="fix-item"><div class="no" style="background:#7c3aed">4</div><div class="t"><b>双面镜</b><div>指尖贴在镜面上, 若指尖与镜像指尖之间有明显缝隙=普通镜子; 若指尖相触无缝隙=可能是双面镜(后面有人), 立即检查另一侧。</div></div></div><div class="fix-item"><div class="no" style="background:#7c3aed">5</div><div class="t"><b>小孔排查</b><div>检查墙面上不该有的直径 &lt;2mm 的小孔, 尤其对准床/浴室的位置; 可用手机电筒侧照, 观察孔内是否有镜片反光。</div></div></div><div class="fix-item"><div class="no" style="background:#7c3aed">6</div><div class="t"><b>电源异常</b><div>检查烟雾报警器、插座、路由器、音箱、闹钟等是否多出线缆、指示灯异常、摆放位置别扭(对床/对浴室)。</div></div></div><div class="fix-item"><div class="no" style="background:#7c3aed">7</div><div class="t"><b>信号检测</b><div>如有手持 RF 探测器, 可在关掉房间内所有已知无线设备后, 扫描 1.2GHz/2.4GHz/5.8GHz 频段的异常发射源。</div></div></div><div class="fix-item"><div class="no" style="background:#7c3aed">8</div><div class="t"><b>其他渠道</b><div>发现可疑设备后不要拆除/触碰(保留证据), 联系酒店方、必要时报警; 贵重物品和隐私物品远离可疑摆件。</div></div></div></div>
+  </div>
+</main>
+<footer><div class="wrap">
+  由 IoT Security Scanner v1.0.0 酒店隐私模式生成 · 2026-10-13 14:37:23<br>
+  仅扫描你本人所住房间的网络 · 共检测 1 台设备
+</div></footer>
+</body>
+</html>

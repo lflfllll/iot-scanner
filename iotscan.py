@@ -60,6 +60,11 @@ def build_parser() -> argparse.ArgumentParser:
                         "建议仅对自有设备使用)")
     p.add_argument("--demo", action="store_true",
                    help="演示模式: 使用内置模拟家庭网络数据生成报告")
+    p.add_argument("--hotel", action="store_true",
+                   help="酒店隐私模式: 排查所住房间网络中的针孔摄像头/偷拍设备"
+                        " (ONVIF/SSDP 组播发现 + 摄像头指纹 + 物理排查清单)")
+    p.add_argument("--hotel-demo", action="store_true",
+                   help="酒店隐私模式演示: 内置模拟酒店房间网络数据")
     p.add_argument("--html", metavar="PATH", help="HTML 报告输出路径")
     p.add_argument("--json", metavar="PATH", help="JSON 报告输出路径")
     p.add_argument("-o", "--outdir", default="reports",
@@ -101,7 +106,29 @@ def main(argv: list[str] | None = None) -> int:
         result = _demo()
         progress("deep_probing", f"对 {result['summary']['total_devices']} 台 "
                                   f"模拟设备执行规则引擎 ...")
+        hotel_mode = False
+    elif args.hotel_demo:
+        from iotscan.core import hotel_demo_result
+        result = hotel_demo_result()
+        hotel_mode = True
+    elif args.hotel:
+        hotel_mode = True
+        try:
+            from iotscan.hotelscan import run_hotel_scan
+            result = run_hotel_scan(target=args.target, timeout=args.timeout,
+                                    threads=args.threads,
+                                    progress=Progress(quiet=args.quiet))
+        except KeyboardInterrupt:
+            print(color("\n[!] 用户中断扫描", "yellow"))
+            return 130
+        except Exception as exc:  # noqa: BLE001
+            print(color(f"\n[!] 扫描出错: {exc}", "red"))
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+            return 1
     else:
+        hotel_mode = False
         try:
             result = run_scan(target=args.target, ports_spec=args.ports,
                               full=args.full, timeout=args.timeout,
@@ -120,6 +147,17 @@ def main(argv: list[str] | None = None) -> int:
     # ---- 报告输出
     os.makedirs(args.outdir, exist_ok=True)
     stamp = fmt_ts()
+    if hotel_mode:
+        from iotscan.report import console_hotel_report, save_hotel_html
+        hpath = args.html or os.path.join(args.outdir,
+                                          f"hotel-scan-{stamp}.html")
+        save_hotel_html(result, hpath)
+        if not args.quiet:
+            console_hotel_report(result)
+            print(color("报告已生成:", "green", True))
+            print(f"  HTML : {hpath}")
+        return 0
+
     html_path = args.html or os.path.join(args.outdir, f"iot-scan-{stamp}.html")
     json_path = args.json or os.path.join(args.outdir, f"iot-scan-{stamp}.json")
     save_html(result, html_path)

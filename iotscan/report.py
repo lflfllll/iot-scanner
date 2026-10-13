@@ -9,7 +9,7 @@ import sys
 from datetime import datetime
 
 from .utils import (C, SEV_CN, SEV_ORDER, color, fmt_dur, now_str,
-                    sev_badge, sev_cn)
+                    pad, sev_badge, sev_cn)
 
 SEV_COLOR_HEX = {
     "critical": "#dc2626", "high": "#ea580c", "medium": "#ca8a04",
@@ -66,7 +66,6 @@ def console_report(result: dict, out=sys.stdout, verbose: bool = False) -> None:
     w()
 
     # ---- 设备风险排名
-    from .utils import pad
     w(color("── 设备风险排名 (风险从高到低) ──", "bold", True))
     w(f" {pad('IP', 16)}{pad('设备类型', 16)}{pad('厂商', 26)}"
       f"{pad('评分', 4)} {'等级':<4}风险项")
@@ -475,6 +474,208 @@ def html_report(result: dict) -> str:
 
 def save_html(result: dict, path: str) -> str:
     html = html_report(result)
+    os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+    return path
+
+
+# ================================================================ 酒店隐私模式
+SUSP_HEX = {"高度可疑": "#dc2626", "可疑": "#ea580c", "常规": "#16a34a"}
+SUSP_BG = {"高度可疑": "#fef2f2", "可疑": "#fff7ed", "常规": "#f0fdf4"}
+
+
+def _susp_badge(level: str) -> str:
+    return (f'<span class="badge" style="color:{SUSP_HEX[level]};'
+            f'background:{SUSP_BG[level]}">{level}</span>')
+
+
+def console_hotel_report(result: dict, out=sys.stdout) -> None:
+    from .hotelscan import PHYSICAL_CHECKLIST
+    devices, meta, summary = (result["devices"], result["meta"],
+                              result["summary"])
+
+    def w(line: str = "") -> None:
+        print(line, file=out)
+
+    w()
+    w(color("╔══════════════════════════════════════════════════════╗", "magenta"))
+    w(color("║", "magenta") + color("        酒店隐私扫描 · 针孔摄像头排查", "bold", True)
+      + " " * 13 + color("║", "magenta"))
+    w(color("╚══════════════════════════════════════════════════════╝", "magenta"))
+    w(f" 扫描目标 : {meta['target']}")
+    w(f" 开始时间 : {meta['start_time']}    耗时: {fmt_dur(meta['duration'])}")
+    w(f" 组播发现 : ONVIF {summary['onvif_found']} 台 · SSDP {summary['ssdp_found']} 条")
+    w(f" 网络设备 : {summary['total_devices']} 台    "
+      f"可疑设备: {color(str(summary['suspicious_count']), 'yellow', True)} 台"
+      f" (其中高度可疑 {color(str(summary['high_suspicious']), 'red', True)} 台)")
+    w()
+
+    w(color("── 可疑设备排行 (按可疑度排序) ──", "bold", True))
+    w(f" {pad('IP', 16)}{pad('设备类型', 16)}{pad('厂商', 24)}"
+      f"{pad('可疑度', 10)}关键证据")
+    w(" " + "-" * 84)
+    for d in devices:
+        s = d["suspicion"]
+        lvl_color = ("red" if s["level"] == "高度可疑" else
+                     "yellow" if s["level"] == "可疑" else "green")
+        first = s["evidence"][0] if s["evidence"] else "-"
+        w(f" {pad(_trunc(d['ip'], 16), 16)}"
+          f"{pad(_trunc(d.get('device_type') or '-', 16), 16)}"
+          f"{pad(_trunc(d.get('vendor') or '-', 24), 24)}"
+          f"{color(pad(s['score'], 4) + ' ', lvl_color, True)}   "
+          f"{_trunc(first, 40)}")
+    w()
+
+    sus = [d for d in devices if d["suspicion"]["is_camera_like"]]
+    if sus:
+        w(color("── 可疑设备证据详情 ──", "bold", True))
+        for d in sus:
+            s = d["suspicion"]
+            w(f" ▸ {d['ip']}  {color(s['level'], 'red' if s['level'] == '高度可疑' else 'yellow', True)}"
+              f"  {d.get('device_type') or ''} / {d.get('vendor') or ''}")
+            if d.get("mac"):
+                w(f"   MAC: {d['mac']}")
+            if d.get("open_ports"):
+                from .portscan import TOP_IOT_PORTS
+                w("   端口: " + ", ".join(
+                    f"{p}({TOP_IOT_PORTS.get(p, '?')})" for p in d["open_ports"]))
+            for e in s["evidence"]:
+                w(color(f"   · {e}", "yellow"))
+            w()
+    else:
+        w(color(" 未发现摄像头类设备。", "green"))
+        w()
+
+    w(color("── 物理排查清单 (网络扫描发现不了的摄像头靠这个) ──", "bold", True))
+    for name, desc in PHYSICAL_CHECKLIST:
+        w(f" [ ] {color(name, 'cyan')}: {desc}")
+    w()
+    w(color("说明: 仅扫描你本人所住房间的网络; 存本地卡不入网的摄像头必须靠"
+            "物理排查。", "dim"))
+
+
+def html_hotel_report(result: dict) -> str:
+    from .hotelscan import PHYSICAL_CHECKLIST
+    devices, meta, summary = (result["devices"], result["meta"],
+                              result["summary"])
+    sus = [d for d in devices if d["suspicion"]["is_camera_like"]]
+
+    rows = []
+    for d in devices:
+        s = d["suspicion"]
+        col = SUSP_HEX[s["level"]]
+        first = _esc(s["evidence"][0]) if s["evidence"] else "—"
+        rows.append(f'''<tr><td><b>{_esc(d["ip"])}</b></td>
+<td>{_esc(d.get("device_type") or "-")}</td>
+<td>{_esc(d.get("vendor") or "-")}</td>
+<td><span class="badge" style="color:{col};background:{SUSP_BG[s['level']]}">
+{s["level"]} {s["score"]}</span></td>
+<td>{first}</td></tr>''')
+
+    sus_cards = []
+    for d in sus:
+        s = d["suspicion"]
+        col = SUSP_HEX[s["level"]]
+        ev = "".join(f"<li>{_esc(e)}</li>" for e in s["evidence"])
+        ports = ", ".join(f"{p}" for p in d.get("open_ports") or [])
+        sus_cards.append(f'''
+<div class="finding medium" style="border-left-color:{col}">
+  <h4>{_susp_badge(s["level"])} {_esc(d["ip"])}
+    <span class="rid">{_esc(d.get("device_type") or "未知设备")} ·
+    {_esc(d.get("vendor") or "未知厂商")} · 可疑度 {s["score"]}/100</span></h4>
+  <p style="margin:6px 0"><b>发现证据：</b></p>
+  <ul style="margin:4px 0 8px 18px;font-size:13px;color:#374151">{ev}</ul>
+  <p style="font-size:13px;color:#374151">开放端口: {_esc(ports) or "无"}
+    {(" · MAC: " + _esc(d["mac"])) if d.get("mac") else ""}
+    · 发现方式: {_esc(d.get("discovery", "-"))}</p>
+  <div class="fix"><b>处置建议：</b>不要触碰/拆除该设备（保留证据），
+    先对照"物理排查清单"人工确认其位置与朝向；如确认对准床/浴室等私密区域，
+    联系酒店方并视情况报警；离开时可关闭房间总电源检验。</div>
+</div>''')
+
+    checks = "".join(
+        f'<div class="fix-item"><div class="no" style="background:#7c3aed">'
+        f'{i}</div><div class="t"><b>{_esc(name)}</b>'
+        f'<div>{_esc(desc)}</div></div></div>'
+        for i, (name, desc) in enumerate(PHYSICAL_CHECKLIST, 1))
+
+    verdict = ("发现可疑摄像头类设备，请立即按证据排查"
+               if sus else "未发现摄像头类设备")
+    verdict_col = "#dc2626" if sus else "#16a34a"
+    return f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>酒店隐私扫描报告 · 针孔摄像头排查 · {_esc(meta["start_time"])}</title>
+<style>{CSS}</style>
+</head>
+<body>
+<header class="hero" style="background:linear-gradient(135deg,#4c1d95,#7c3aed)">
+<div class="wrap">
+  <h1>酒店隐私扫描报告 · 针孔摄像头排查</h1>
+  <div class="sub">
+    <span>扫描目标：{_esc(meta["target"])}</span>
+    <span>时间：{_esc(meta["start_time"])}</span>
+    <span>耗时：{_esc(fmt_dur(meta["duration"]))}</span>
+    <span>模式：hotel</span>
+  </div>
+</div></header>
+<main class="wrap">
+  <div class="cards">
+    <div class="card"><h3>排查结论</h3>
+      <div style="font-size:20px;font-weight:700;color:{verdict_col};
+        line-height:1.4;margin-top:6px">{verdict}</div>
+      <div style="margin-top:10px;font-size:12.5px;color:var(--sub)">
+        高度可疑 {summary["high_suspicious"]} 台 · 可疑
+        {max(0, summary["suspicious_count"] - summary["high_suspicious"])} 台</div>
+    </div>
+    <div class="card"><h3>网络设备</h3>
+      <div class="kpi"><b>{summary["total_devices"]}</b><small>台在线设备</small></div>
+      <div class="kpi" style="margin-top:8px"><b>{summary["total_open_ports"]}</b>
+        <small>个开放端口</small></div>
+    </div>
+    <div class="card"><h3>组播协议发现</h3>
+      <div class="kpi"><b>{summary["onvif_found"]}</b><small>台 ONVIF 摄像头应答</small></div>
+      <div class="kpi" style="margin-top:8px"><b>{summary["ssdp_found"]}</b>
+        <small>条 SSDP 应答</small></div>
+    </div>
+    <div class="card"><h3>排查提示</h3>
+      <div style="font-size:12.5px;color:var(--sub);margin-top:8px;line-height:1.7">
+        本报告只覆盖<b>接入网络</b>的摄像头；<b>存本地卡、不入网</b>的针孔摄像头
+        网络扫描无法发现，请务必配合下方物理排查清单。</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>全部设备摄像头可疑度</h3>
+    <table class="rank">
+      <tr><th>IP</th><th>设备类型</th><th>厂商</th><th>可疑度</th><th>关键证据</th></tr>
+      {''.join(rows)}
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>可疑设备证据</h3>
+    {''.join(sus_cards) if sus_cards else
+     '<div class="finding info"><h4>未发现摄像头类设备 — 网络侧未检测到'
+     'IPC/NVR/针孔摄像头特征</h4></div>'}
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>物理排查清单</h3>
+    <div class="fix-list">{checks}</div>
+  </div>
+</main>
+<footer><div class="wrap">
+  由 IoT Security Scanner v1.0.0 酒店隐私模式生成 · {_esc(now_str())}<br>
+  仅扫描你本人所住房间的网络 · 共检测 {summary["total_devices"]} 台设备
+</div></footer>
+</body>
+</html>'''
+
+
+def save_hotel_html(result: dict, path: str) -> str:
+    html = html_hotel_report(result)
     os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)

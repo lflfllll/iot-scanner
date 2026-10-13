@@ -188,6 +188,9 @@ def classify(device: dict) -> dict:
             break
 
     # 3) 厂商修正设备类型
+    if device.get("onvif"):
+        # ONVIF(NetworkVideoTransmitter) 应答即摄像头铁证
+        dev_type = "IP 摄像头"
     if vendor:
         vl = vendor.lower()
         if "hikvision" in vl or "dahua" in vl or "ezviz" in vl or "reolink" in vl:

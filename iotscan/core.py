@@ -342,3 +342,151 @@ def demo_result() -> dict:
                  "rules_loaded": len(vulns.RULES), "creds_tested": True},
         "summary": summary, "devices": built,
     }
+
+
+# ================================================================ 酒店 demo
+def hotel_demo_result() -> dict:
+    """酒店房间网络演示数据: 含 2 台偷拍摄像机特征设备 + 各类常规设备。"""
+    from .hotelscan import camera_suspicion
+
+    onvif = [{
+        "ip": "192.168.30.66",
+        "xaddrs": "http://192.168.30.66:80/onvif/device_service",
+        "types": "dn:NetworkVideoTransmitter tds:Device",
+        "scopes": "onvif://www.onvif.org/name/HK-IPC-2024",
+        "raw": "",
+    }]
+    ssdp = [
+        {"ip": "192.168.30.1", "st": "upnp:rootdevice",
+         "server": "OS 1.0 UPnP/1.0 Realtek/V1.0", "location": "http://192.168.30.1:1900/desc.xml"},
+        {"ip": "192.168.30.108", "st": "urn:schemas-upnp-org:service:AVTransport:1",
+         "server": "Linux/3.0 UPnP/1.0", "location": "http://192.168.30.108:8008/ssdp"},
+    ]
+
+    devices = [
+        # ---- 高度可疑 1: ONVIF 组播应答的迷你摄像头 (改过高位端口) ----
+        dict(ip="192.168.30.66", mac="A4:2B:B0:7D:11:C3", hostname=None,
+             discovery="onvif", open_ports=[80, 8899],
+             _services={
+                 80: {"banner": "HTTP/1.1 200 OK\r\nServer: Boa/0.94.14rc21"},
+                 8899: {"banner": "HTTP/1.1 200 OK - IPC WebUI login"},
+             },
+             probes={"http": {"80": {"status": 401, "server": "Boa/0.94.14rc21",
+                                     "title": "IPCamera Login",
+                                     "www_authenticate": "Basic realm=\"IPC\"",
+                                     "dirlist": False, "dangerous_methods": []}},
+                     "checks": {"snmp_public": None}},
+             onvif=onvif[0]),
+        # ---- 高度可疑 2: 未知厂商 + 随机 MAC + RTSP 开放 (典型针孔摄像头) ----
+        dict(ip="192.168.30.88", mac="7A:33:5E:09:42:11", hostname=None,
+             discovery="arp", open_ports=[554, 80, 8080],
+             _services={
+                 554: {"banner": "RTSP/1.0 200 OK"},
+                 80: {"banner": "HTTP/1.1 200 OK - mini_httpd/1.19"},
+                 8080: {"banner": "HTTP/1.1 200 OK - Uploader"},
+             },
+             probes={"http": {"80": {"status": 200, "server": "mini_httpd/1.19",
+                                     "title": "m0dul3 panel",
+                                     "dirlist": False, "dangerous_methods": []},
+                              "8080": {"status": 200, "server": "",
+                                       "title": "Record List",
+                                       "dirlist": True,
+                                       "dangerous_methods": []}},
+                     "checks": {"rtsp_open": True, "snmp_public": None}},
+             onvif=None),
+        # ---- 高度可疑 3: 录像机端口开放 ----
+        dict(ip="192.168.30.101", mac="0C:8C:24:5A:36:77", hostname="DVR-0101",
+             discovery="icmp", open_ports=[80, 37777, 34567, 23],
+             _services={
+                 80: {"banner": "HTTP/1.1 200 OK - DH-Webs"},
+                 37777: {"banner": "P2P protocol"},
+                 23: {"banner": "Dahua DVR telnet - login:"},
+             },
+             probes={"http": {"80": {"status": 200, "server": "DH-Webs",
+                                     "title": "DH-NVR2104",
+                                     "dirlist": False,
+                                     "dangerous_methods": []}},
+                     "checks": {"snmp_public": None}},
+             onvif=None),
+        # ---- 可疑: 未知厂商 + Web 管理口 (廉价模组, 人工确认) ----
+        dict(ip="192.168.30.105", mac="2E:7F:91:44:0B:2C", hostname=None,
+             discovery="arp", open_ports=[80, 443],
+             _services={
+                 80: {"banner": "HTTP/1.1 200 OK - ESP WebServer"},
+             },
+             probes={"http": {"80": {"status": 200, "server": "ESP WebServer",
+                                     "title": "ESP32-CAM config",
+                                     "dirlist": False,
+                                     "dangerous_methods": []}},
+                     "checks": {"snmp_public": None}},
+             onvif=None),
+        # ---- 常规: 酒店电视 ----
+        dict(ip="192.168.30.108", mac="8C:79:F5:3D:E2:19",
+             hostname="Living-Room-TV", discovery="icmp",
+             open_ports=[8008, 8009, 32768],
+             _services={8008: {"banner": "Google Cast"}},
+             probes={"http": {}, "checks": {"snmp_public": None}},
+             ssdp=[s for s in ssdp if s["ip"] == "192.168.30.108"]),
+        # ---- 常规: 客人手机 ----
+        dict(ip="192.168.30.112", mac="D0:A6:37:11:6C:8F",
+             hostname="iPhone-15-Pro", discovery="icmp",
+             open_ports=[62078, 49152, 49153],
+             _services={62078: {"banner": "iPhone lockdown/sync"}},
+             probes={"http": {}, "checks": {"snmp_public": None}}),
+        # ---- 常规: 客人笔记本 ----
+        dict(ip="192.168.30.115", mac="3C:58:C2:0A:9D:44",
+             hostname="MBP-ROAMING", discovery="icmp",
+             open_ports=[22, 5900, 7000],
+             _services={
+                 22: {"banner": "SSH-2.0-OpenSSH_9.6"},
+                 5900: {"banner": "RFB 003.008"},
+             },
+             probes={"http": {}, "checks": {"snmp_public": None}}),
+        # ---- 常规: 酒店 AP/网关 ----
+        dict(ip="192.168.30.1", mac="1C:BD:B9:02:44:60", hostname="hotel-gw",
+             discovery="icmp", open_ports=[53, 80, 443, 1900],
+             _services={
+                 53: {"banner": "dnsmasq 2.90"},
+                 80: {"banner": "HTTP/1.1 200 OK - Ruijie AP WebUI"},
+                 1900: {"banner": "UPnP/1.0"},
+             },
+             probes={"http": {"80": {"status": 200, "server": "",
+                                     "title": "AP Management", "dirlist": False,
+                                     "dangerous_methods": []}},
+                     "checks": {"snmp_public": None}},
+             ssdp=[s for s in ssdp if s["ip"] == "192.168.30.1"]),
+        # ---- 常规: 本地存储型"摄像头"(无端口, 网络侧无痕迹 — 需要物理排查) ----
+        dict(ip="192.168.30.130", mac=None, hostname=None,
+             discovery="icmp", open_ports=[],
+             _services={},
+             probes={"http": {}, "checks": {"snmp_public": None}},
+             onvif=None),
+    ]
+
+    built = []
+    for dev in devices:
+        d = _build_device(dev)
+        d["onvif"] = dev.get("onvif")
+        d["ssdp"] = dev.get("ssdp")
+        d["suspicion"] = camera_suspicion(d)
+        built.append(d)
+
+    order = {"高度可疑": 0, "可疑": 1, "常规": 2}
+    built.sort(key=lambda d: (order[d["suspicion"]["level"]],
+                              -d["suspicion"]["score"]))
+    suspicious = [d for d in built if d["suspicion"]["is_camera_like"]]
+    summary = {
+        "total_devices": len(built),
+        "onvif_found": len(onvif),
+        "ssdp_found": len(ssdp),
+        "suspicious_count": len(suspicious),
+        "high_suspicious": sum(1 for d in suspicious
+                               if d["suspicion"]["level"] == "高度可疑"),
+        "total_open_ports": sum(len(d.get("open_ports") or []) for d in built),
+    }
+    return {
+        "meta": {"start_time": now_str(), "target": "192.168.30.0/24 (酒店房间, 演示数据)",
+                 "duration": 3.6, "mode": "hotel"},
+        "summary": summary, "devices": built,
+        "onvif": onvif, "ssdp": ssdp,
+    }
