@@ -181,9 +181,20 @@ def run_hotel_scan(target: str | None = None, timeout: float = 0.6,
         net = None
         if target:
             net = ipaddress.ip_network(target, strict=False)
+        else:
+            net = detect_network()
+        n_hosts = net.num_addresses - 2 if net.prefixlen < 31 else net.num_addresses
+        if n_hosts > 20000:
+            raise RuntimeError(
+                f"目标网段 {net} 含 {n_hosts} 台主机, 扫描时间过长。"
+                f"请用 --target 指定更小的网段 (如 {net.network_address}/24)")
+        if n_hosts > 4096:
+            est_min = n_hosts * max(timeout, 1.0) / threads / 60
+            prog("host_discovery",
+                 f"警告: {net} 含 {n_hosts} 台主机, 预计耗时约 {est_min:.0f} 分钟")
         devices = discovery.discover(progress=progress, threads=threads,
                                      timeout=max(timeout, 1.0), network=net)
-        target_desc = str(net) if net else "auto"
+        target_desc = str(net)
     prog("host_discovery", f"发现 {len(devices)} 台在线主机")
 
     # 3. 组播结果合并: ONVIF/SSDP 应答但 ping 不通的设备也要纳入
