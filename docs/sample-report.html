@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IoT 设备安全扫描报告 · 2026-10-12 16:57:21</title>
+<style>
+:root{--ink:#111827;--sub:#6b7280;--line:#e5e7eb;--bg:#f4f6fa;--card:#fff;
+--brand:#2563eb;--crit:#dc2626;--high:#ea580c;--med:#ca8a04;--low:#2563eb;--info:#6b7280}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+background:var(--bg);color:var(--ink);line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:34px 0 30px}
+header.hero h1{font-size:26px;letter-spacing:.5px}
+header.hero .sub{opacity:.85;margin-top:10px;font-size:13px;flex-wrap:wrap}
+header.hero .sub span{margin-right:18px;white-space:nowrap}
+main{padding:26px 0 60px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:-46px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+padding:18px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+.card h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:6px}
+.kpi{display:flex;align-items:baseline;gap:8px}
+.kpi b{font-size:30px}
+.kpi small{color:var(--sub)}
+.gauge-box{grid-row:span 1}
+.gauge{width:100%;height:auto;max-width:260px;display:block;margin:0 auto}
+.grid2{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin-top:16px}
+.donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.donut{width:170px;height:170px}
+.legend div{font-size:13px;margin:3px 0;color:var(--ink)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;
+margin-right:7px;vertical-align:middle}
+table.rank{width:100%;border-collapse:collapse;font-size:13px}
+table.rank th{color:var(--sub);font-weight:600;text-align:left;padding:8px 6px;
+border-bottom:1px solid var(--line)}
+table.rank td{padding:8px 6px;border-bottom:1px solid #f1f3f7}
+.bar{height:8px;border-radius:4px;background:#eef1f6;overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;border-radius:4px}
+.badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;
+font-weight:600;line-height:1.7}
+.meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--sub);
+margin:10px 0 12px}
+.meta b{color:var(--ink);font-weight:600}
+.ports{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.port{font-size:12px;background:#f1f5f9;border:1px solid var(--line);
+border-radius:8px;padding:2px 9px;color:#334155}
+.port.warn{background:#fff7ed;border-color:#fdba74;color:#9a3412}
+.port.danger{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+.finding{border:1px solid var(--line);border-left-width:4px;border-radius:10px;
+padding:12px 14px;margin:10px 0;background:#fff}
+.finding h4{font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.finding h4 .rid{font-size:11px;color:var(--sub);font-weight:500}
+.finding p{font-size:13px;color:#374151;margin:7px 0}
+.finding .fix{color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;
+border-radius:8px;padding:8px 11px;font-size:13px;margin-top:6px}
+.finding .fix b{color:#14532d}
+.finding .refs{font-size:11px;color:var(--sub);margin-top:6px}
+.finding.critical{border-left-color:var(--crit)}.finding.high{border-left-color:var(--high)}
+.finding.medium{border-left-color:var(--med)}.finding.low{border-left-color:var(--low)}
+.finding.info{border-left-color:var(--info)}
+.dev-card{margin-top:18px}
+.dev-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dev-head h2{font-size:18px}
+.dev-head .grade{width:34px;height:34px;border-radius:9px;color:#fff;
+display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+.type-chip{background:#eef2ff;color:#3730a3;border-radius:999px;
+padding:2px 12px;font-size:12px;font-weight:600}
+.vendor{font-size:13px;color:var(--sub)}
+.fix-list{counter-reset:fx}
+.fix-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line);
+font-size:13.5px}
+.fix-item:last-child{border-bottom:none}
+.fix-item .no{counter-increment:fx;min-width:26px;height:26px;border-radius:8px;
+color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;
+font-size:13px}
+.fix-item .t b{font-size:13.5px}
+.fix-item .t div{color:var(--sub);font-size:12.5px}
+.fix-item .devs{color:var(--sub);font-size:12px;white-space:nowrap}
+footer{padding:22px 0 30px;color:var(--sub);font-size:12px;text-align:center}
+@media(max-width:860px){.cards{grid-template-columns:repeat(2,1fr)}
+.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <h1>IoT 设备安全扫描报告</h1>
+  <div class="sub">
+    <span>扫描目标：192.168.1.0/24 (演示数据)</span>
+    <span>开始时间：2026-10-12 16:57:21</span>
+    <span>耗时：800 毫秒</span>
+    <span>模式：demo</span>
+  </div>
+</div></header>
+<main class="wrap">
+  <div class="cards">
+    <div class="card gauge-box"><h3>全网安全评分</h3>
+<svg viewBox="0 0 200 120" class="gauge" role="img" aria-label="安全评分 29">
+  <path d="M 22 100 A 78 78 0 0 1 178 100"
+        fill="none" stroke="#e5e7eb" stroke-width="18" stroke-linecap="round"/>
+  <path d="M 22 100 A 78 78 0 0 1 178 100"
+        fill="none" stroke="#dc2626" stroke-width="18" stroke-linecap="round"
+        stroke-dasharray="71.1 245.0"/>
+  <text x="100" y="88" text-anchor="middle" font-size="40"
+        font-weight="700" fill="#111827">29</text>
+  <text x="100" y="108" text-anchor="middle" font-size="12"
+        fill="#6b7280">/ 100 · E 级</text>
+</svg></div>
+    <div class="card"><h3>设备资产</h3>
+      <div class="kpi"><b>12</b><small>台在线设备</small></div>
+      <div class="kpi" style="margin-top:8px"><b>40</b><small>个开放端口</small></div>
+      <div class="kpi" style="margin-top:8px"><b>58</b><small>设备平均分</small></div>
+    </div>
+    <div class="card"><h3>风险发现</h3>
+      <div class="kpi"><b>49</b><small>项风险</small></div>
+      <div class="kpi" style="margin-top:8px"><b style="color:var(--crit)">6</b><small>严重</small></div>
+      <div class="kpi" style="margin-top:8px"><b style="color:var(--high)">11</b><small>高危</small></div>
+    </div>
+    <div class="card"><h3>处置优先级</h3>
+      <div class="kpi"><b style="color:var(--crit)">17</b><small>项需立即处理（严重+高危）</small></div>
+      <div style="margin-top:10px;font-size:12.5px;color:var(--sub)">
+        按设备评分排序，优先修复评分最低设备上的问题。
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h3>漏洞严重级分布</h3>
+      <div class="donut-wrap"><svg viewBox="0 0 200 200" class="donut" role="img" aria-label="漏洞分布"><circle cx="100" cy="100" r="60" fill="none" stroke="#dc2626" stroke-width="26" stroke-dasharray="46.16 330.83" stroke-dashoffset="-25.00" transform="rotate(-90 100 100)"/><circle cx="100" cy="100" r="60" fill="none" stroke="#ea580c" stroke-width="26" stroke-dasharray="84.63 292.36" stroke-dashoffset="21.16" transform="rotate(-90 100 100)"/><circle cx="100" cy="100" r="60" fill="none" stroke="#ca8a04" stroke-width="26" stroke-dasharray="146.18 230.81" stroke-dashoffset="105.79" transform="rotate(-90 100 100)"/><circle cx="100" cy="100" r="60" fill="none" stroke="#2563eb" stroke-width="26" stroke-dasharray="100.02 276.97" stroke-dashoffset="251.97" transform="rotate(-90 100 100)"/><text x="100" y="96" text-anchor="middle" font-size="34" font-weight="700" fill="#111827">49</text><text x="100" y="118" text-anchor="middle" font-size="12" fill="#6b7280">项风险</text></svg><div class="legend"><div class="lg"><i style="background:#dc2626"></i>严重 <b>6</b></div><div class="lg"><i style="background:#ea580c"></i>高危 <b>11</b></div><div class="lg"><i style="background:#ca8a04"></i>中危 <b>19</b></div><div class="lg"><i style="background:#2563eb"></i>低危 <b>13</b></div></div></div>
+    </div>
+    <div class="card"><h3>设备风险排名（分数越低越危险）</h3>
+      <table class="rank">
+        <tr><th>IP</th><th>设备类型</th><th>厂商</th><th>风险</th><th>评分</th><th>风险项</th></tr>
+        
+<tr><td><b>192.168.1.106</b></td>
+<td>DVR/NVR 录像机</td>
+<td>大华 Dahua</td>
+<td><div class="bar"><i style="width:100%;background:#991b1b"></i></div></td>
+<td><b>0</b> (F)</td>
+<td>10</td></tr>
+<tr><td><b>192.168.1.150</b></td>
+<td>IoT 模组/开发板</td>
+<td>乐鑫</td>
+<td><div class="bar"><i style="width:89%;background:#991b1b"></i></div></td>
+<td><b>11</b> (F)</td>
+<td>7</td></tr>
+<tr><td><b>192.168.1.101</b></td>
+<td>IP 摄像头</td>
+<td>海康威视 Hikvision</td>
+<td><div class="bar"><i style="width:84%;background:#991b1b"></i></div></td>
+<td><b>16</b> (F)</td>
+<td>7</td></tr>
+<tr><td><b>192.168.1.109</b></td>
+<td>网络设备</td>
+<td>Raspberry Pi</td>
+<td><div class="bar"><i style="width:71%;background:#dc2626"></i></div></td>
+<td><b>29</b> (E)</td>
+<td>7</td></tr>
+<tr><td><b>192.168.1.1</b></td>
+<td>嵌入式 Web 设备</td>
+<td>TP-Link</td>
+<td><div class="bar"><i style="width:43%;background:#ea580c"></i></div></td>
+<td><b>57</b> (D)</td>
+<td>5</td></tr>
+<tr><td><b>192.168.1.107</b></td>
+<td>智能音箱/投屏设备</td>
+<td>小米 Xiaomi</td>
+<td><div class="bar"><i style="width:41%;background:#ea580c"></i></div></td>
+<td><b>59</b> (D)</td>
+<td>3</td></tr>
+<tr><td><b>192.168.1.104</b></td>
+<td>NAS 网络存储</td>
+<td>群晖</td>
+<td><div class="bar"><i style="width:35%;background:#ca8a04"></i></div></td>
+<td><b>65</b> (C)</td>
+<td>4</td></tr>
+<tr><td><b>192.168.1.112</b></td>
+<td>Windows 主机</td>
+<td>Microsoft</td>
+<td><div class="bar"><i style="width:16%;background:#65a30d"></i></div></td>
+<td><b>84</b> (B)</td>
+<td>1</td></tr>
+<tr><td><b>192.168.1.102</b></td>
+<td>智能音箱</td>
+<td>Amazon</td>
+<td><div class="bar"><i style="width:11%;background:#65a30d"></i></div></td>
+<td><b>89</b> (B)</td>
+<td>2</td></tr>
+<tr><td><b>192.168.1.105</b></td>
+<td>智能家居设备</td>
+<td>乐鑫 Espressif</td>
+<td><div class="bar"><i style="width:11%;background:#65a30d"></i></div></td>
+<td><b>89</b> (B)</td>
+<td>2</td></tr>
+<tr><td><b>192.168.1.103</b></td>
+<td>打印机</td>
+<td>HP</td>
+<td><div class="bar"><i style="width:8%;background:#16a34a"></i></div></td>
+<td><b>92</b> (A)</td>
+<td>1</td></tr>
+<tr><td><b>192.168.1.108</b></td>
+<td>智能温控器</td>
+<td>Honeywell</td>
+<td><div class="bar"><i style="width:4%;background:#16a34a"></i></div></td>
+<td><b>100</b> (A)</td>
+<td>0</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>优先修复清单（按严重级与影响面排序）</h3>
+    <div class="fix-list">
+<div class="fix-item">
+  <div class="no" style="background:#dc2626">1</div>
+  <div class="t"><b><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> 设备仍在使用默认凭据 (HTTP Basic:80)</b>
+    <div>立即登录设备修改为 12 位以上强密码（大小写+数字+符号）；检查路由器是否已将设备暴露到公网；无法修改口令的设备应更换或升级固件。</div></div>
+  <div class="devs">影响 192.168.1.106, 192.168.1.150, 192.168.1.101</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#dc2626">2</div>
+  <div class="t"><b><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> GoAhead Web 服务器（已知 RCE）</b>
+    <div>立即升级设备固件；关闭 80/8000 端口对不可信网段的访问。</div></div>
+  <div class="devs">影响 192.168.1.106</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#dc2626">3</div>
+  <div class="t"><b><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> Redis 未授权访问</b>
+    <div>设置 requirepass 强密码；绑定 127.0.0.1；禁用危险命令（CONFIG/FLUSHALL）；开启 protected-mode。</div></div>
+  <div class="devs">影响 192.168.1.109</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#dc2626">4</div>
+  <div class="t"><b><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> ADB 调试端口开放</b>
+    <div>关闭 ADB 调试（开发者选项）；仅在使用时临时开启。</div></div>
+  <div class="devs">影响 192.168.1.107</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ea580c">5</div>
+  <div class="t"><b><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> Telnet 服务开放（明文协议）</b>
+    <div>在设备管理界面关闭 Telnet，改用 SSH；如厂商固件不支持，至少设置 16 位以上强密码并禁止 WAN 口访问该端口。</div></div>
+  <div class="devs">影响 192.168.1.106, 192.168.1.150, 192.168.1.101</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ea580c">6</div>
+  <div class="t"><b><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> RTSP 视频流未授权可播放</b>
+    <div>在摄像机设置中开启 RTSP 认证（Digest/Basic），修改默认的 rtsp:// 路径，并限制访问网段。</div></div>
+  <div class="devs">影响 192.168.1.106, 192.168.1.101</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ea580c">7</div>
+  <div class="t"><b><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> SMB 服务暴露</b>
+    <div>禁用 SMBv1；确认设备为最新固件；NAS 类设备限制 SMB 访问网段。</div></div>
+  <div class="devs">影响 192.168.1.104, 192.168.1.112</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ea580c">8</div>
+  <div class="t"><b><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> 已知僵尸网络常用端口开放</b>
+    <div>检查设备是否已感染僵尸网络（异常外联、固件被篡改）；升级固件、恢复出厂设置并修改全部默认密码。</div></div>
+  <div class="devs">影响 192.168.1.106</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ea580c">9</div>
+  <div class="t"><b><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> MQTT Broker 允许匿名接入</b>
+    <div>为 MQTT Broker 启用用户名/密码认证与 ACL 主题授权，非必要不监听 0.0.0.0，优先使用 8883 端口 + TLS。</div></div>
+  <div class="devs">影响 192.168.1.150</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ea580c">10</div>
+  <div class="t"><b><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> SSH 服务版本过旧（存在已知漏洞）</b>
+    <div>升级 OpenSSH &gt;= 9.x / Dropbear &gt;= 2020，或关闭不必要的 SSH。</div></div>
+  <div class="devs">影响 192.168.1.109</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ea580c">11</div>
+  <div class="t"><b><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> Boa Web 服务器版本过旧</b>
+    <div>升级固件替换 Web 服务组件；限制管理端口访问来源。</div></div>
+  <div class="devs">影响 192.168.1.1</div>
+</div>
+<div class="fix-item">
+  <div class="no" style="background:#ca8a04">12</div>
+  <div class="t"><b><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP</b>
+    <div>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div></div>
+  <div class="devs">影响 192.168.1.106, 192.168.1.150, 192.168.1.101, 192.168.1.109 等 9 台</div>
+</div></div>
+  </div>
+
+  <h2 style="margin:26px 0 4px;font-size:19px">设备详情</h2>
+  
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#991b1b">F</div>
+    <h2>192.168.1.106</h2>
+    <span class="type-chip">DVR/NVR 录像机</span>
+    <span class="vendor">大华 Dahua</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>0</b>/100
+      · 高风险</span>
+  </div>
+  <div class="meta">MAC <b>90:02:A9:3B:C1:77</b> · 主机名 <b>dvr-garage</b> ·  ·
+    发现方式: icmp · 开放端口 5</div>
+  <div class="ports"><span class="port danger">23 · Telnet</span><span class="port warn">80 · HTTP</span><span class="port warn">554 · RTSP</span><span class="port warn">37777 · Dahua-DVR</span><span class="port warn">34567 · DVR-alt</span></div>
+  
+<div class="finding critical">
+  <h4><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> GoAhead Web 服务器（已知 RCE）
+      <span class="rid">WEBSERVER-GOAHEAD · CWE CWE-306
+      · CVSS 9.8</span></h4>
+  <p>GoAhead 是大量国产摄像头/DVR 内置的 Web 服务器，CVE-2017-17215 等漏洞允许通过 /SDK/webLanguage 接口未授权执行任意代码，互联网批量利用广泛。</p>
+  
+  <div class="fix"><b>修复建议：</b>立即升级设备固件；关闭 80/8000 端口对不可信网段的访问。</div>
+  <div class="refs">参考: CVE-2017-17215 · CVE-2017-16997</div>
+</div>
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> Telnet 服务开放（明文协议）
+      <span class="rid">TELNET-OPEN · CWE CWE-319
+      · CVSS 7.5</span></h4>
+  <p>Telnet 以明文传输全部流量（含用户名密码），且是 Mirai 等物联网僵尸网络最常攻击的入口。局域网内任意主机均可嗅探凭据。</p>
+  
+  <div class="fix"><b>修复建议：</b>在设备管理界面关闭 Telnet，改用 SSH；如厂商固件不支持，至少设置 16 位以上强密码并禁止 WAN 口访问该端口。</div>
+  <div class="refs">参考: CWE-319 · Mirai 僵尸网络 · CERT VU#630996</div>
+</div>
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> RTSP 视频流未授权可播放
+      <span class="rid">RTSP-OPEN · CWE CWE-306
+      · CVSS 7.5</span></h4>
+  <p>摄像头 RTSP 流无需认证即可 DESCRIBE/播放，攻击者可直接窃取实时画面，隐私严重泄露。</p>
+  
+  <div class="fix"><b>修复建议：</b>在摄像机设置中开启 RTSP 认证（Digest/Basic），修改默认的 rtsp:// 路径，并限制访问网段。</div>
+  <div class="refs">参考: CWE-306 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> 已知僵尸网络常用端口开放
+      <span class="rid">BOTNET-PORTS · CWE CWE-668
+      · CVSS 7.5</span></h4>
+  <p>2323/48101/34567/37777 等端口是 Mirai、Mozi 等僵尸网络扫描频率最高的端口，常见于被植入远控的木马。</p>
+  
+  <div class="fix"><b>修复建议：</b>检查设备是否已感染僵尸网络（异常外联、固件被篡改）；升级固件、恢复出厂设置并修改全部默认密码。</div>
+  <div class="refs">参考: Mirai · Mozi · CWE-668</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> DVR/NVR 私有管理端口暴露
+      <span class="rid">DVR-EXPOSED · CWE CWE-668
+      · CVSS 5.3</span></h4>
+  <p>大华等 DVR/NVR 私有协议端口开放，历史上存在多起未授权访问与认证绕过漏洞（CVE-2013-6117 等）。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件至最新；把 DVR 置于独立网段；关闭不用的 SDK 端口。</div>
+  <div class="refs">参考: CVE-2013-6117 · CWE-668</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 摄像头嵌入式 Web 服务器
+      <span class="rid">WEBSERVER-CAMERA-WEBS · CWE CWE-306
+      · CVSS 6.8</span></h4>
+  <p>DNVRS-Webs/App-webs 等嵌入式 Web 服务器存在认证绕过与命令注入历史漏洞（海康/大华设备多发）。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级设备固件到最新版本；修改默认口令；必要时关闭 Web 管理。</div>
+  <div class="refs">参考: CWE-306</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 服务未提供 HTTPS 选项
+      <span class="rid">WEB-NO-HTTPS · CWE CWE-319
+      · CVSS 3.7</span></h4>
+  <p>该设备开放 HTTP 管理端口，但未发现任何 HTTPS 端口，全部管理流量均为明文。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件开启 HTTPS，或将设备置于独立 IoT VLAN 限制访问。</div>
+  <div class="refs">参考: CWE-319</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> RTSP 端口暴露
+      <span class="rid">RTSP-PORT · CWE CWE-668
+      · CVSS 3.1</span></h4>
+  <p>RTSP 端口开放，需确认已启用认证（详见探测结果）。</p>
+  
+  <div class="fix"><b>修复建议：</b>保持固件更新；如通过 NVR 集中管理，可关闭摄像机直连 RTSP。</div>
+  <div class="refs">参考: CWE-668</div>
+</div>
+<div class="finding critical">
+  <h4><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> 设备仍在使用默认凭据 (HTTP Basic:80)
+      <span class="rid">DEFAULT-CREDS · CWE CWE-521
+      · CVSS 9.8</span></h4>
+  <p>设备 HTTP Basic 服务（端口 80）可使用默认凭据 admin/admin 直接登录。这是 Mirai、Mozi 等僵尸网络最常用的入侵方式，也意味着内网任何人都能接管该设备。</p>
+  <p style="color:#991b1b"><b>测试到的凭据：</b>admin / admin (HTTP Basic:80)</p>
+  <div class="fix"><b>修复建议：</b>立即登录设备修改为 12 位以上强密码（大小写+数字+符号）；检查路由器是否已将设备暴露到公网；无法修改口令的设备应更换或升级固件。</div>
+  <div class="refs">参考: CWE-521 · Mirai · CISA 默认口令清单</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#991b1b">F</div>
+    <h2>192.168.1.150</h2>
+    <span class="type-chip">IoT 模组/开发板</span>
+    <span class="vendor">乐鑫</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>11</b>/100
+      · 高风险</span>
+  </div>
+  <div class="meta">MAC <b>7C:9E:BD:03:5A:41</b> ·  ·  ·
+    发现方式: arp · 开放端口 3</div>
+  <div class="ports"><span class="port danger">23 · Telnet</span><span class="port warn">80 · HTTP</span><span class="port warn">8080 · HTTP-Proxy</span></div>
+  
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> Telnet 服务开放（明文协议）
+      <span class="rid">TELNET-OPEN · CWE CWE-319
+      · CVSS 7.5</span></h4>
+  <p>Telnet 以明文传输全部流量（含用户名密码），且是 Mirai 等物联网僵尸网络最常攻击的入口。局域网内任意主机均可嗅探凭据。</p>
+  
+  <div class="fix"><b>修复建议：</b>在设备管理界面关闭 Telnet，改用 SSH；如厂商固件不支持，至少设置 16 位以上强密码并禁止 WAN 口访问该端口。</div>
+  <div class="refs">参考: CWE-319 · Mirai 僵尸网络 · CERT VU#630996</div>
+</div>
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> MQTT Broker 允许匿名接入
+      <span class="rid">MQTT-ANON · CWE CWE-306
+      · CVSS 7.5</span></h4>
+  <p>MQTT 代理未启用认证，攻击者可订阅 # 通配主题窃听全部智能设备数据（温控、门锁状态、摄像头事件），并向设备下发伪造指令。</p>
+  
+  <div class="fix"><b>修复建议：</b>为 MQTT Broker 启用用户名/密码认证与 ACL 主题授权，非必要不监听 0.0.0.0，优先使用 8883 端口 + TLS。</div>
+  <div class="refs">参考: CWE-306 · OWASP IoT Top-10 I5</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> Web 服务启用危险 HTTP 方法
+      <span class="rid">HTTP-DANGER-METHODS · CWE CWE-650
+      · CVSS 6.5</span></h4>
+  <p>OPTIONS 探测显示该 Web 服务允许 PUT/DELETE/MOVE 等方法，攻击者可上传恶意文件或篡改配置。</p>
+  
+  <div class="fix"><b>修复建议：</b>在 Web 服务器配置中仅允许 GET/POST/HEAD，关闭 WebDAV 类方法。</div>
+  <div class="refs">参考: CWE-650</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 摄像头嵌入式 Web 服务器
+      <span class="rid">WEBSERVER-CAMERA-WEBS · CWE CWE-306
+      · CVSS 6.8</span></h4>
+  <p>DNVRS-Webs/App-webs 等嵌入式 Web 服务器存在认证绕过与命令注入历史漏洞（海康/大华设备多发）。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级设备固件到最新版本；修改默认口令；必要时关闭 Web 管理。</div>
+  <div class="refs">参考: CWE-306</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 服务未提供 HTTPS 选项
+      <span class="rid">WEB-NO-HTTPS · CWE CWE-319
+      · CVSS 3.7</span></h4>
+  <p>该设备开放 HTTP 管理端口，但未发现任何 HTTPS 端口，全部管理流量均为明文。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件开启 HTTPS，或将设备置于独立 IoT VLAN 限制访问。</div>
+  <div class="refs">参考: CWE-319</div>
+</div>
+<div class="finding critical">
+  <h4><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> 设备仍在使用默认凭据 (Telnet:23)
+      <span class="rid">DEFAULT-CREDS · CWE CWE-521
+      · CVSS 9.8</span></h4>
+  <p>设备 Telnet 服务（端口 23）可使用默认凭据 root/root 直接登录。这是 Mirai、Mozi 等僵尸网络最常用的入侵方式，也意味着内网任何人都能接管该设备。</p>
+  <p style="color:#991b1b"><b>测试到的凭据：</b>root / root (Telnet:23)</p>
+  <div class="fix"><b>修复建议：</b>立即登录设备修改为 12 位以上强密码（大小写+数字+符号）；检查路由器是否已将设备暴露到公网；无法修改口令的设备应更换或升级固件。</div>
+  <div class="refs">参考: CWE-521 · Mirai · CISA 默认口令清单</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#991b1b">F</div>
+    <h2>192.168.1.101</h2>
+    <span class="type-chip">IP 摄像头</span>
+    <span class="vendor">海康威视 Hikvision</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>16</b>/100
+      · 高风险</span>
+  </div>
+  <div class="meta">MAC <b>44:19:B6:0C:4D:22</b> · 主机名 <b>hik-cam-frontdoor</b> ·  ·
+    发现方式: icmp · 开放端口 4</div>
+  <div class="ports"><span class="port danger">23 · Telnet</span><span class="port warn">80 · HTTP</span><span class="port warn">554 · RTSP</span><span class="port warn">8000 · HTTP-alt</span></div>
+  
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> Telnet 服务开放（明文协议）
+      <span class="rid">TELNET-OPEN · CWE CWE-319
+      · CVSS 7.5</span></h4>
+  <p>Telnet 以明文传输全部流量（含用户名密码），且是 Mirai 等物联网僵尸网络最常攻击的入口。局域网内任意主机均可嗅探凭据。</p>
+  
+  <div class="fix"><b>修复建议：</b>在设备管理界面关闭 Telnet，改用 SSH；如厂商固件不支持，至少设置 16 位以上强密码并禁止 WAN 口访问该端口。</div>
+  <div class="refs">参考: CWE-319 · Mirai 僵尸网络 · CERT VU#630996</div>
+</div>
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> RTSP 视频流未授权可播放
+      <span class="rid">RTSP-OPEN · CWE CWE-306
+      · CVSS 7.5</span></h4>
+  <p>摄像头 RTSP 流无需认证即可 DESCRIBE/播放，攻击者可直接窃取实时画面，隐私严重泄露。</p>
+  
+  <div class="fix"><b>修复建议：</b>在摄像机设置中开启 RTSP 认证（Digest/Basic），修改默认的 rtsp:// 路径，并限制访问网段。</div>
+  <div class="refs">参考: CWE-306 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 摄像头嵌入式 Web 服务器
+      <span class="rid">WEBSERVER-CAMERA-WEBS · CWE CWE-306
+      · CVSS 6.8</span></h4>
+  <p>DNVRS-Webs/App-webs 等嵌入式 Web 服务器存在认证绕过与命令注入历史漏洞（海康/大华设备多发）。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级设备固件到最新版本；修改默认口令；必要时关闭 Web 管理。</div>
+  <div class="refs">参考: CWE-306</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 服务未提供 HTTPS 选项
+      <span class="rid">WEB-NO-HTTPS · CWE CWE-319
+      · CVSS 3.7</span></h4>
+  <p>该设备开放 HTTP 管理端口，但未发现任何 HTTPS 端口，全部管理流量均为明文。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件开启 HTTPS，或将设备置于独立 IoT VLAN 限制访问。</div>
+  <div class="refs">参考: CWE-319</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> RTSP 端口暴露
+      <span class="rid">RTSP-PORT · CWE CWE-668
+      · CVSS 3.1</span></h4>
+  <p>RTSP 端口开放，需确认已启用认证（详见探测结果）。</p>
+  
+  <div class="fix"><b>修复建议：</b>保持固件更新；如通过 NVR 集中管理，可关闭摄像机直连 RTSP。</div>
+  <div class="refs">参考: CWE-668</div>
+</div>
+<div class="finding critical">
+  <h4><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> 设备仍在使用默认凭据 (Telnet:23)
+      <span class="rid">DEFAULT-CREDS · CWE CWE-521
+      · CVSS 9.8</span></h4>
+  <p>设备 Telnet 服务（端口 23）可使用默认凭据 root/12345 直接登录。这是 Mirai、Mozi 等僵尸网络最常用的入侵方式，也意味着内网任何人都能接管该设备。</p>
+  <p style="color:#991b1b"><b>测试到的凭据：</b>root / 12345 (Telnet:23)</p>
+  <div class="fix"><b>修复建议：</b>立即登录设备修改为 12 位以上强密码（大小写+数字+符号）；检查路由器是否已将设备暴露到公网；无法修改口令的设备应更换或升级固件。</div>
+  <div class="refs">参考: CWE-521 · Mirai · CISA 默认口令清单</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#dc2626">E</div>
+    <h2>192.168.1.109</h2>
+    <span class="type-chip">网络设备</span>
+    <span class="vendor">Raspberry Pi</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>29</b>/100
+      · 高风险</span>
+  </div>
+  <div class="meta">MAC <b>D8:3A:DD:45:71:F3</b> · 主机名 <b>raspberrypi</b> · 系统 <b>Linux</b> ·
+    发现方式: arp · 开放端口 3</div>
+  <div class="ports"><span class="port ">22 · SSH</span><span class="port danger">6379 · Redis</span><span class="port warn">8080 · HTTP-Proxy</span></div>
+  
+<div class="finding critical">
+  <h4><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> Redis 未授权访问
+      <span class="rid">REDIS-UNAUTH · CWE CWE-306
+      · CVSS 9.8</span></h4>
+  <p>Redis 无认证且监听外网地址时，攻击者可通过 CONFIG SET dir + bgsave 写入 SSH 公钥或计划任务，直接获得服务器权限，亦可执行 FLUSHALL 清空数据。</p>
+  
+  <div class="fix"><b>修复建议：</b>设置 requirepass 强密码；绑定 127.0.0.1；禁用危险命令（CONFIG/FLUSHALL）；开启 protected-mode。</div>
+  <div class="refs">参考: CVE-2015-4335 · CWE-306</div>
+</div>
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> SSH 服务版本过旧（存在已知漏洞）
+      <span class="rid">SSH-OLD · CWE CWE-1104
+      · CVSS 7.5</span></h4>
+  <p>SSH 版本低于当前维护版本，存在用户名枚举(CVE-2018-15473)、SCP 客户端注入(CVE-2020-15778) 等公开漏洞。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级 OpenSSH &gt;= 9.x / Dropbear &gt;= 2020，或关闭不必要的 SSH。</div>
+  <div class="refs">参考: CVE-2018-15473 · CVE-2020-15778 · CWE-1104</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> Redis 端口暴露
+      <span class="rid">REDIS-PORT · CWE CWE-668
+      · CVSS 5.3</span></h4>
+  <p>Redis 端口开放，需确认已启用认证。</p>
+  
+  <div class="fix"><b>修复建议：</b>为 Redis 配置 ACL 与防火墙白名单。</div>
+  <div class="refs">参考: CWE-668</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 服务未提供 HTTPS 选项
+      <span class="rid">WEB-NO-HTTPS · CWE CWE-319
+      · CVSS 3.7</span></h4>
+  <p>该设备开放 HTTP 管理端口，但未发现任何 HTTPS 端口，全部管理流量均为明文。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件开启 HTTPS，或将设备置于独立 IoT VLAN 限制访问。</div>
+  <div class="refs">参考: CWE-319</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 目录列表暴露
+      <span class="rid">HTTP-DIRLIST · CWE CWE-548
+      · CVSS 4.3</span></h4>
+  <p>Web 根目录可列出文件清单，攻击者可借此发现备份文件、配置导出、日志等敏感内容。</p>
+  
+  <div class="fix"><b>修复建议：</b>关闭目录浏览（Options -Indexes / 关闭 autoindex）。</div>
+  <div class="refs">参考: CWE-548</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> SSH 服务开放
+      <span class="rid">SSH-OPEN · CWE CWE-668
+      · CVSS 2.6</span></h4>
+  <p>设备开放 SSH，若使用密码认证存在被暴力破解风险；嵌入式设备默认密码是僵尸网络首要目标。</p>
+  
+  <div class="fix"><b>修复建议：</b>改用密钥认证、禁用 root 登录、修改默认端口，并部署 fail2ban 类防爆破机制。</div>
+  <div class="refs">参考: CWE-307</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#ea580c">D</div>
+    <h2>192.168.1.1</h2>
+    <span class="type-chip">嵌入式 Web 设备</span>
+    <span class="vendor">TP-Link</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>57</b>/100
+      · 中风险</span>
+  </div>
+  <div class="meta">MAC <b>50:C7:BF:2A:91:34</b> · 主机名 <b>Router.lan</b> · 系统 <b>Boa Web Server</b> ·
+    发现方式: icmp · 开放端口 4</div>
+  <div class="ports"><span class="port warn">53 · DNS</span><span class="port warn">80 · HTTP</span><span class="port ">443 · HTTPS</span><span class="port warn">1900 · UPnP</span></div>
+  
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> Boa Web 服务器版本过旧
+      <span class="rid">WEBSERVER-BOA-OLD · CWE CWE-1104
+      · CVSS 7.5</span></h4>
+  <p>Boa 0.94.x 是 2002 年即停止维护的 Web 服务器，存在多个认证绕过与缓冲区溢出漏洞，是路由器/摄像头的常见内置组件。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件替换 Web 服务组件；限制管理端口访问来源。</div>
+  <div class="refs">参考: CWE-1104 · Boa 历史漏洞</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> UPnP/SSDP 服务暴露
+      <span class="rid">UPNP-EXPOSED · CWE CWE-668
+      · CVSS 5.3</span></h4>
+  <p>UPnP 允许内网设备自动配置端口映射，CallStranger 等漏洞可被用于外网探测与 DDoS 放大，摄像头/路由器 UPnP 事件频发。</p>
+  
+  <div class="fix"><b>修复建议：</b>在路由器关闭 UPnP；设备侧禁用不需要的 UPnP 服务。</div>
+  <div class="refs">参考: CVE-2020-12695 · CWE-668</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> DNS 服务暴露
+      <span class="rid">DNS-OPEN · CWE CWE-668
+      · CVSS 5.3</span></h4>
+  <p>DNS 53 端口开放，若配置为开放解析器可被用于反射 DDoS 攻击，也可能被 DNS 劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>路由器 DNS 仅对内网响应；确认未开启递归出口。</div>
+  <div class="refs">参考: CWE-668</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> 页面泄露固件/版本信息
+      <span class="rid">FIRMWARE-EXPOSED · CWE CWE-200
+      · CVSS 3.1</span></h4>
+  <p>设备页面标题包含固件/版本号，便于攻击者检索对应公开漏洞（CVE）并构造针对性攻击。</p>
+  
+  <div class="fix"><b>修复建议：</b>关闭管理页面上的版本信息显示；保持固件为最新版本。</div>
+  <div class="refs">参考: CWE-200</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#ea580c">D</div>
+    <h2>192.168.1.107</h2>
+    <span class="type-chip">智能音箱/投屏设备</span>
+    <span class="vendor">小米 Xiaomi</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>59</b>/100
+      · 中风险</span>
+  </div>
+  <div class="meta">MAC <b>64:09:80:5A:32:B6</b> · 主机名 <b>Xiaomi-TV</b> ·  ·
+    发现方式: icmp · 开放端口 3</div>
+  <div class="ports"><span class="port danger">5555 · ADB</span><span class="port warn">8008 · HTTP-alt</span><span class="port warn">8009 · unknown</span></div>
+  
+<div class="finding critical">
+  <h4><span class="badge" style="color:#dc2626;background:#fef2f2">严重</span> ADB 调试端口开放
+      <span class="rid">ADB-OPEN · CWE CWE-489
+      · CVSS 9.8</span></h4>
+  <p>Android ADB 调试端口无认证暴露，攻击者可直接获得设备shell 权限，安装应用、读取数据，是电视/机顶盒被入侵的主要原因。</p>
+  
+  <div class="fix"><b>修复建议：</b>关闭 ADB 调试（开发者选项）；仅在使用时临时开启。</div>
+  <div class="refs">参考: CWE-489</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 服务未提供 HTTPS 选项
+      <span class="rid">WEB-NO-HTTPS · CWE CWE-319
+      · CVSS 3.7</span></h4>
+  <p>该设备开放 HTTP 管理端口，但未发现任何 HTTPS 端口，全部管理流量均为明文。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件开启 HTTPS，或将设备置于独立 IoT VLAN 限制访问。</div>
+  <div class="refs">参考: CWE-319</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#ca8a04">C</div>
+    <h2>192.168.1.104</h2>
+    <span class="type-chip">NAS 网络存储</span>
+    <span class="vendor">群晖</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>65</b>/100
+      · 低风险</span>
+  </div>
+  <div class="meta">MAC <b>00:11:32:4E:6A:8B</b> · 主机名 <b>NAS-DS220</b> · 系统 <b>DSM</b> ·
+    发现方式: icmp · 开放端口 6</div>
+  <div class="ports"><span class="port ">22 · SSH</span><span class="port warn">80 · HTTP</span><span class="port ">443 · HTTPS</span><span class="port danger">445 · SMB</span><span class="port ">5000 · UPnP-alt</span><span class="port ">5001 · HTTPS-alt</span></div>
+  
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> SMB 服务暴露
+      <span class="rid">SMB-OPEN · CWE CWE-668
+      · CVSS 7.8</span></h4>
+  <p>445/SMB 暴露在局域网，历史上 EternalBlue(CVE-2017-0144) 等漏洞可直接导致远程代码执行；IoT 设备使用老旧 Samba 组件时风险更高。</p>
+  
+  <div class="fix"><b>修复建议：</b>禁用 SMBv1；确认设备为最新固件；NAS 类设备限制 SMB 访问网段。</div>
+  <div class="refs">参考: CVE-2017-0144 · CWE-668</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> UPnP/SSDP 服务暴露
+      <span class="rid">UPNP-EXPOSED · CWE CWE-668
+      · CVSS 5.3</span></h4>
+  <p>UPnP 允许内网设备自动配置端口映射，CallStranger 等漏洞可被用于外网探测与 DDoS 放大，摄像头/路由器 UPnP 事件频发。</p>
+  
+  <div class="fix"><b>修复建议：</b>在路由器关闭 UPnP；设备侧禁用不需要的 UPnP 服务。</div>
+  <div class="refs">参考: CVE-2020-12695 · CWE-668</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> SSH 服务开放
+      <span class="rid">SSH-OPEN · CWE CWE-668
+      · CVSS 2.6</span></h4>
+  <p>设备开放 SSH，若使用密码认证存在被暴力破解风险；嵌入式设备默认密码是僵尸网络首要目标。</p>
+  
+  <div class="fix"><b>修复建议：</b>改用密钥认证、禁用 root 登录、修改默认端口，并部署 fail2ban 类防爆破机制。</div>
+  <div class="refs">参考: CWE-307</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#65a30d">B</div>
+    <h2>192.168.1.112</h2>
+    <span class="type-chip">Windows 主机</span>
+    <span class="vendor">Microsoft</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>84</b>/100
+      · 低风险</span>
+  </div>
+  <div class="meta">MAC <b>8C:16:45:0E:5C:1D</b> · 主机名 <b>LAPTOP-MAIN</b> · 系统 <b>Windows</b> ·
+    发现方式: icmp · 开放端口 3</div>
+  <div class="ports"><span class="port warn">135 · MS-RPC</span><span class="port ">139 · NetBIOS</span><span class="port danger">445 · SMB</span></div>
+  
+<div class="finding high">
+  <h4><span class="badge" style="color:#ea580c;background:#fff7ed">高危</span> SMB 服务暴露
+      <span class="rid">SMB-OPEN · CWE CWE-668
+      · CVSS 7.8</span></h4>
+  <p>445/SMB 暴露在局域网，历史上 EternalBlue(CVE-2017-0144) 等漏洞可直接导致远程代码执行；IoT 设备使用老旧 Samba 组件时风险更高。</p>
+  
+  <div class="fix"><b>修复建议：</b>禁用 SMBv1；确认设备为最新固件；NAS 类设备限制 SMB 访问网段。</div>
+  <div class="refs">参考: CVE-2017-0144 · CWE-668</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#65a30d">B</div>
+    <h2>192.168.1.102</h2>
+    <span class="type-chip">智能音箱</span>
+    <span class="vendor">Amazon</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>89</b>/100
+      · 安全</span>
+  </div>
+  <div class="meta">MAC <b>44:65:0D:88:2E:11</b> · 主机名 <b>echo-living-room</b> ·  ·
+    发现方式: icmp · 开放端口 3</div>
+  <div class="ports"><span class="port ">4070 · unknown</span><span class="port warn">8008 · HTTP-alt</span><span class="port warn">8888 · HTTP-alt</span></div>
+  
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 服务未提供 HTTPS 选项
+      <span class="rid">WEB-NO-HTTPS · CWE CWE-319
+      · CVSS 3.7</span></h4>
+  <p>该设备开放 HTTP 管理端口，但未发现任何 HTTPS 端口，全部管理流量均为明文。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件开启 HTTPS，或将设备置于独立 IoT VLAN 限制访问。</div>
+  <div class="refs">参考: CWE-319</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#65a30d">B</div>
+    <h2>192.168.1.105</h2>
+    <span class="type-chip">智能家居设备</span>
+    <span class="vendor">乐鑫 Espressif</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>89</b>/100
+      · 安全</span>
+  </div>
+  <div class="meta">MAC <b>24:0A:C4:11:9F:02</b> ·  ·  ·
+    发现方式: arp · 开放端口 1</div>
+  <div class="ports"><span class="port warn">80 · HTTP</span></div>
+  
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 管理界面使用未加密 HTTP
+      <span class="rid">HTTP-ADMIN · CWE CWE-319
+      · CVSS 5.9</span></h4>
+  <p>设备通过明文 HTTP 提供管理页面，同一网络下的攻击者可嗅探登录凭据、篡改页面或实施会话劫持。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用设备 HTTPS 管理（如有），或仅在可信内网访问；修改默认管理端口并启用管理页登录失败锁定。</div>
+  <div class="refs">参考: CWE-319 · OWASP IoT Top-10 I3</div>
+</div>
+<div class="finding low">
+  <h4><span class="badge" style="color:#2563eb;background:#eff6ff">低危</span> Web 服务未提供 HTTPS 选项
+      <span class="rid">WEB-NO-HTTPS · CWE CWE-319
+      · CVSS 3.7</span></h4>
+  <p>该设备开放 HTTP 管理端口，但未发现任何 HTTPS 端口，全部管理流量均为明文。</p>
+  
+  <div class="fix"><b>修复建议：</b>升级固件开启 HTTPS，或将设备置于独立 IoT VLAN 限制访问。</div>
+  <div class="refs">参考: CWE-319</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#16a34a">A</div>
+    <h2>192.168.1.103</h2>
+    <span class="type-chip">打印机</span>
+    <span class="vendor">HP</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>92</b>/100
+      · 安全</span>
+  </div>
+  <div class="meta">MAC <b>3C:D9:2B:71:0F:5C</b> · 主机名 <b>HP-LaserJet-Pro</b> ·  ·
+    发现方式: icmp · 开放端口 3</div>
+  <div class="ports"><span class="port ">515 · LPD</span><span class="port ">631 · IPP</span><span class="port ">9100 · JetDirect</span></div>
+  
+<div class="finding medium">
+  <h4><span class="badge" style="color:#ca8a04;background:#fefce8">中危</span> 打印服务暴露
+      <span class="rid">PRINT-EXPOSED · CWE CWE-200
+      · CVSS 5.3</span></h4>
+  <p>Raw/IPP 打印端口开放意味着同网段任意主机可向打印机发送打印任务（数据泄露风险）；部分打印机固件漏洞可被直接利用。</p>
+  
+  <div class="fix"><b>修复建议：</b>启用打印机访问控制/认证；将打印机置于独立 VLAN；保持固件更新。</div>
+  <div class="refs">参考: CWE-200</div>
+</div>
+</section>
+<section class="card dev-card">
+  <div class="dev-head">
+    <div class="grade" style="background:#16a34a">A</div>
+    <h2>192.168.1.108</h2>
+    <span class="type-chip">智能温控器</span>
+    <span class="vendor">Honeywell</span>
+    <span style="margin-left:auto" class="vendor">评分 <b>100</b>/100
+      · 安全</span>
+  </div>
+  <div class="meta">MAC <b>00:20:3D:D1:44:9A</b> · 主机名 <b>thermostat-hall</b> ·  ·
+    发现方式: icmp · 开放端口 2</div>
+  <div class="ports"><span class="port ">8883 · MQTT-TLS</span><span class="port ">443 · HTTPS</span></div>
+  <div class="finding info"><h4>未发现安全问题 — 该设备本次扫描通过全部规则</h4></div>
+</section>
+</main>
+<footer>
+  <div class="wrap">
+    由 IoT Security Scanner v1.0.0 生成 · 2026-10-12 16:57:21<br>
+    共扫描 12 台设备 · 命中规则 49 项
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# 扫描输出（运行时生成）
+reports/
+*.log
+
+# 编辑器/系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
